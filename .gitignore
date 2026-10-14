@@ -1,0 +1,29 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+ENV/
+*.env
+
+# Raw Datasets (Large image collections > 15 GB)
+data/raw/
+*.zip
+*.zip.kaggle-partial
+
+# Reference repository (as requested)
+reference_repo/
+
+# Temporary files & cache
+temp/
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+*.log
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.gemini/
