@@ -11,6 +11,11 @@ CLASSES_JSON = os.path.join("data", "class_names.json")
 
 VALID_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 
+# Option B: Filter out incomplete crops that lack paired healthy/diseased classes.
+# Ensures every supported crop has both a baseline Healthy class and Disease class(es).
+EXCLUDE_INCOMPLETE_CROPS = True
+EXCLUDED_CROPS = {"Squash", "Tea", "Blueberry", "Raspberry", "Soybean"}
+
 # 1. Cassava Disease Mapping (ammarali32/cassava-datasetv2 & competition train.csv)
 CASSAVA_MAP = {
     "0": "Cassava - Bacterial Blight (CBB)",
@@ -370,6 +375,13 @@ def scan_all_datasets():
     class_counts = df["label_name"].value_counts()
     valid_classes = class_counts[class_counts >= 10].index
     df = df[df["label_name"].isin(valid_classes)].copy()
+
+    # Option B: Filter out incomplete crops lacking balanced healthy/diseased pairs
+    if EXCLUDE_INCOMPLETE_CROPS:
+        print(f"\n[Option B] Excluding incomplete crops without paired Healthy & Disease classes: {', '.join(sorted(EXCLUDED_CROPS))}", flush=True)
+        before_count = len(df)
+        df = df[~df["label_name"].apply(lambda x: x.split(" - ")[0].strip() in EXCLUDED_CROPS)].copy()
+        print(f"   -> Removed {before_count - len(df):,} images from incomplete crops ({len(df):,} images remaining).", flush=True)
 
     # Create master deterministic numeric IDs (0, 1, 2...)
     unique_labels = sorted(df["label_name"].unique())
