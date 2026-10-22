@@ -1,30 +1,29 @@
-# 🌱 Intelligent Plant Disease & Pest Detection System
+# 🌱 Rice, Wheat & Agricultural Pest Detection System
 
-An enterprise-grade, multi-dataset deep learning pipeline for unified crop disease diagnosis and agricultural pest identification.
+An enterprise-grade, high-performance deep learning pipeline specialized for unified **Rice**, **Wheat**, and **Agricultural Pest** identification and diagnosis.
 
 ---
 
 ## 📌 Project Overview
 
-This repository unifies multiple leading agricultural vision datasets into a single, high-performance training pipeline:
-- **Total Images Indexed**: 120,670
-- **Total Unique Classes**: 58 (46 Plant Disease/Healthy categories + 12 Agricultural Pest categories)
-- **Train / Validation Split**: Stratified 80% Train (96,512 images) / 20% Validation (24,158 images)
-- **Unified Pipeline Script**: `data/01_unify_datasets.py` executes in ~4 seconds.
-- **Paired Health Baseline**: Configured with `EXCLUDE_INCOMPLETE_CROPS = True` to guarantee that every single supported crop has both disease and healthy baseline classes.
+This repository focuses on cereal crops (**Rice** and **Wheat**) alongside major **Agricultural Pests** into a single, balanced training pipeline:
+- **Total Images Indexed**: 18,996
+- **Total Unique Classes**: 22 (10 Disease/Healthy categories + 12 Agricultural Pest categories)
+- **Train / Validation Split**: Stratified 80% Train (15,186 images) / 20% Validation (3,810 images)
+- **Unified Pipeline Script**: `data/01_unify_datasets.py` executes in ~3.5 seconds.
+- **Paired Health Baseline**: Both Rice and Wheat have paired Healthy baseline classes (`Rice - Healthy` and `Wheat - Healthy`) to prevent false positives in diagnosis.
+- **Focus Mode**: `ONLY_RICE_WHEAT_PESTS = True` (set in `data/01_unify_datasets.py`) isolates target datasets while allowing expansion if needed.
 
 ---
 
 ## 📊 Dataset Integration Matrix
 
-| Dataset Source | Images Active | Primary Focus | Structure |
+| Dataset Source | Images Active | Target Categories | Structure |
 | :--- | :--- | :--- | :--- |
-| **PlantVillage** | 45,507 | 30 Paired Disease & Healthy classes | Folder-per-class |
-| **Disease-Dataset (entishar)** | 35,000 | In-field disease variations | Harmonized `Condition(Crop)` |
-| **Cassava Dataset v2** | 24,395 | 5 Cassava virus & blight diseases + Healthy | CSV Annotation (`train.csv`) |
-| **AgroPest-12** | 13,140 | 12 Crop pest classes (Weevils, Ants, Caterpillars, etc.) | YOLO Bounding Box & Class labels |
-| **RiceLeafsDisease** | 2,628 | Bacterial Leaf Blight, Blast, Brown Spot, Scald + Healthy | Field conditions |
-| *TeaLeafNet* | *Excluded* | *Excluded by default (no healthy baseline available)* | Geotagged high-res images |
+| **AgroPest-12** | 13,140 | 12 Crop Pest classes (Weevils, Ants, Caterpillars, etc.) | YOLO Bounding Box & Class labels |
+| **Wheat Diseases** | 3,228 | 4 Classes: Crown & Root Rot, Leaf Rust, Loose Smut, Healthy | Folder-per-class |
+| **RiceLeafsDisease** | 2,628 | 6 Classes: Bacterial Leaf Blight, Brown Spot, Leaf Blast, Leaf Scald, Narrow Brown Spot, Healthy | Folder-per-class |
+| *Other Crops (PlantVillage, Cassava, etc.)* | *Excluded* | *Excluded by focus filter (`ONLY_RICE_WHEAT_PESTS = True`)* | Pre-configured in raw/ |
 
 ---
 
@@ -61,8 +60,8 @@ python data/01_unify_datasets.py
 ```
 
 This generates:
-- `data/unified_index.csv`: Full index of all 120,670 samples with filepaths, class names, categories (`disease` / `pest`), sources, and stratified splits.
-- `data/class_names.json`: Deterministic 58-class mapping dictionary.
+- `data/unified_index.csv`: Full index of all 18,996 samples with filepaths, class names, categories (`disease` / `pest`), sources, and stratified splits.
+- `data/class_names.json`: Master dictionary mapping 22 numeric class IDs to class names.
 
 ---
 
@@ -72,10 +71,13 @@ This generates:
 plant/
 │
 ├── data/
-│   ├── 01_unify_datasets.py     # Unified multi-dataset indexer & stratified splitter
-│   ├── class_names.json         # Master dictionary of 58 paired classes
-│   ├── unified_index.csv        # Stratified dataset index (120k rows)
-│   └── raw/                     # Raw datasets (excluded from git)
+│   ├── 01_unify_datasets.py     # Unified indexer & stratified splitter for Rice, Wheat & Pests
+│   ├── class_names.json         # Master dictionary of 22 target classes
+│   ├── unified_index.csv        # Stratified dataset index (18,996 rows)
+│   └── raw/
+│       ├── agropest_12/         # AgroPest-12 YOLO images and labels
+│       ├── rice_diseases/       # RiceLeafsDisease dataset
+│       └── wheat_diseases/      # Wheat leaf disease dataset
 │
 ├── reference_repo/              # Reference web interface & MobileNet baseline
 │   ├── Crop_disease.py          # Flask backend inference service
@@ -90,20 +92,35 @@ plant/
 
 ---
 
-## 🏷️ Supported Classes (12 Paired Crops + 12 Agricultural Pests)
+## 🏷️ Supported Classes (22 Total: 10 Cereal Disease/Healthy + 12 Agricultural Pests)
 
-Every supported crop is strictly paired with a `Healthy` baseline class to prevent false positives during diagnosis:
+Every supported crop is strictly paired with a `Healthy` baseline class:
 
-- **Apple**: Apple Scab, Black Rot, Cedar Apple Rust, Healthy
-- **Cassava**: Bacterial Blight (CBB), Brown Streak Disease (CBSD), Green Mottle (CGM), Mosaic Disease (CMD), Healthy
-- **Cherry**: Powdery Mildew, Healthy
-- **Corn (Maize)**: Cercospora Leaf Spot / Gray Leaf Spot, Common Rust, Northern Leaf Blight, Healthy
-- **Grape**: Black Rot, Esca (Black Measles), Leaf Blight (Isariopsis Leaf Spot), Healthy
-- **Orange**: Huanglongbing (Citrus Greening), Healthy
-- **Peach**: Bacterial Spot, Healthy
-- **Pepper Bell**: Bacterial Spot, Healthy
-- **Potato**: Early Blight, Late Blight, Healthy
-- **Rice**: Bacterial Leaf Blight, Brown Spot, Leaf Blast, Leaf Scald, Narrow Brown Spot, Healthy
-- **Strawberry**: Leaf Scorch, Healthy
-- **Tomato**: Bacterial Spot, Early Blight, Late Blight, Leaf Mold, Septoria Leaf Spot, Spider Mites (Two-spotted), Target Spot, Tomato Mosaic Virus, Tomato Yellow Leaf Curl Virus, Healthy
-- **Agricultural Pests**: Ants, Bees, Beetles, Caterpillars, Earthworms, Earwigs, Grasshoppers, Moths, Slugs, Snails, Wasps, Weevils
+### 🌾 Rice (6 Classes)
+- `Rice - Bacterial Leaf Blight`
+- `Rice - Brown Spot`
+- `Rice - Healthy`
+- `Rice - Leaf Blast`
+- `Rice - Leaf Scald`
+- `Rice - Narrow Brown Spot`
+
+### 🌾 Wheat (4 Classes)
+- `Wheat - Crown and Root Rot`
+- `Wheat - Healthy`
+- `Wheat - Leaf Rust`
+- `Wheat - Loose Smut`
+
+### 🐛 Agricultural Pests (12 Classes)
+- `Pest - Ants`
+- `Pest - Bees`
+- `Pest - Beetles`
+- `Pest - Caterpillars`
+- `Pest - Earthworms`
+- `Pest - Earwigs`
+- `Pest - Grasshoppers`
+- `Pest - Moths`
+- `Pest - Slugs`
+- `Pest - Snails`
+- `Pest - Wasps`
+- `Pest - Weevils`
+

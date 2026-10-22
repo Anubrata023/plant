@@ -16,6 +16,10 @@ VALID_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 EXCLUDE_INCOMPLETE_CROPS = True
 EXCLUDED_CROPS = {"Squash", "Tea", "Blueberry", "Raspberry", "Soybean"}
 
+# Focus Mode: Filter exclusively for Rice, Wheat, and Pests (target crops and agricultural pests)
+ONLY_RICE_WHEAT_PESTS = True
+ALLOWED_CROPS = {"Rice", "Wheat"}
+
 # 1. Cassava Disease Mapping (ammarali32/cassava-datasetv2 & competition train.csv)
 CASSAVA_MAP = {
     "0": "Cassava - Bacterial Blight (CBB)",
@@ -41,6 +45,27 @@ RICE_MAP = {
     "leaf_blast": "Rice - Leaf Blast",
     "leaf_scald": "Rice - Leaf Scald",
     "narrow_brown_spot": "Rice - Narrow Brown Spot",
+}
+
+# 4. Wheat Disease Mapping (Wheat leaf disease datasets, Kaggle, LWDCD)
+WHEAT_MAP = {
+    "wheat_healthy": "Wheat - Healthy",
+    "healthy": "Wheat - Healthy",
+    "wheat_leaf_rust": "Wheat - Leaf Rust",
+    "leaf_rust": "Wheat - Leaf Rust",
+    "brown_rust": "Wheat - Leaf Rust",
+    "wheat_loose_smut": "Wheat - Loose Smut",
+    "loose_smut": "Wheat - Loose Smut",
+    "wheat_crown_root_rot": "Wheat - Crown and Root Rot",
+    "crown_and_root_rot": "Wheat - Crown and Root Rot",
+    "wheat_crown_and_root_rot": "Wheat - Crown and Root Rot",
+    "wheat_yellow_rust": "Wheat - Stripe Rust (Yellow Rust)",
+    "yellow_rust": "Wheat - Stripe Rust (Yellow Rust)",
+    "stripe_rust": "Wheat - Stripe Rust (Yellow Rust)",
+    "wheat_septoria": "Wheat - Septoria",
+    "septoria": "Wheat - Septoria",
+    "powdery_mildew": "Wheat - Powdery Mildew",
+    "wheat_powdery_mildew": "Wheat - Powdery Mildew",
 }
 
 # 4. Canonical PlantVillage & Disease-Dataset Mapping
@@ -285,6 +310,15 @@ def clean_label_name(folder_name, source_dataset, ip102_map):
         if name_lower in RICE_MAP:
             return RICE_MAP[name_lower]
 
+    if "wheat" in s_lower:
+        name_lower = name.lower()
+        if name_lower in WHEAT_MAP:
+            return WHEAT_MAP[name_lower]
+        clean = name.replace("___", " - ").replace("__", " - ").replace("_", " ").strip().title()
+        if not clean.lower().startswith("wheat"):
+            clean = f"Wheat - {clean}"
+        return clean
+
     cleaned = name.replace("___", " - ").replace("__", " - ").replace("_", " ")
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     return cleaned
@@ -299,8 +333,14 @@ def scan_all_datasets():
 
     for dataset_name in sorted(os.listdir(RAW_DIR)):
         dataset_path = os.path.join(RAW_DIR, dataset_name)
-        if not os.path.isdir(dataset_path) or dataset_name == "poulami_crop_repo":
+        if not os.path.isdir(dataset_path) or dataset_name == "poulami_crop_repo" or dataset_name.startswith("_"):
             continue
+
+        if ONLY_RICE_WHEAT_PESTS:
+            # Skip non-target raw folders for instant scan performance
+            is_relevant = any(k in dataset_name.lower() for k in ["rice", "wheat", "pest", "agropest", "ip102"])
+            if not is_relevant:
+                continue
 
         print(f"Scanning '{dataset_name}' ...", flush=True)
 
@@ -382,6 +422,16 @@ def scan_all_datasets():
         before_count = len(df)
         df = df[~df["label_name"].apply(lambda x: x.split(" - ")[0].strip() in EXCLUDED_CROPS)].copy()
         print(f"   -> Removed {before_count - len(df):,} images from incomplete crops ({len(df):,} images remaining).", flush=True)
+
+    # Focus Filter: Restrict strictly to Rice, Wheat, and Pests
+    if ONLY_RICE_WHEAT_PESTS:
+        print(f"\n[Focus Filter] Restricting dataset strictly to Rice, Wheat, and Agricultural Pests...", flush=True)
+        before_count = len(df)
+        df = df[
+            (df["category"] == "pest") |
+            (df["label_name"].apply(lambda x: x.split(" - ")[0].strip() in ALLOWED_CROPS))
+        ].copy()
+        print(f"   -> Retained {len(df):,} images (filtered out {before_count - len(df):,} images from other crops).", flush=True)
 
     # Create master deterministic numeric IDs (0, 1, 2...)
     unique_labels = sorted(df["label_name"].unique())
