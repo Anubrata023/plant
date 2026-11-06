@@ -1,0 +1,438 @@
+{
+    "overall_accuracy": 89.08,
+    "macro_f1": 88.61,
+    "weighted_f1": 89.25,
+    "per_class": [
+        {
+            "Class ID": 0,
+            "Class Name": "Pest - Ants",
+            "Precision": 92.92,
+            "Recall": 96.96,
+            "F1-Score": 94.89,
+            "Support": 230
+        },
+        {
+            "Class ID": 1,
+            "Class Name": "Pest - Bees",
+            "Precision": 97.36,
+            "Recall": 89.84,
+            "F1-Score": 93.45,
+            "Support": 246
+        },
+        {
+            "Class ID": 2,
+            "Class Name": "Pest - Beetles",
+            "Precision": 86.96,
+            "Recall": 82.9,
+            "F1-Score": 84.88,
+            "Support": 193
+        },
+        {
+            "Class ID": 3,
+            "Class Name": "Pest - Caterpillars",
+            "Precision": 90.5,
+            "Recall": 79.8,
+            "F1-Score": 84.82,
+            "Support": 203
+        },
+        {
+            "Class ID": 4,
+            "Class Name": "Pest - Earthworms",
+            "Precision": 92.02,
+            "Recall": 96.15,
+            "F1-Score": 94.04,
+            "Support": 156
+        },
+        {
+            "Class ID": 5,
+            "Class Name": "Pest - Earwigs",
+            "Precision": 95.81,
+            "Recall": 88.83,
+            "F1-Score": 92.19,
+            "Support": 206
+        },
+        {
+            "Class ID": 6,
+            "Class Name": "Pest - Grasshoppers",
+            "Precision": 89.88,
+            "Recall": 94.87,
+            "F1-Score": 92.31,
+            "Support": 234
+        },
+        {
+            "Class ID": 7,
+            "Class Name": "Pest - Moths",
+            "Precision": 96.96,
+            "Recall": 99.11,
+            "F1-Score": 98.02,
+            "Support": 225
+        },
+        {
+            "Class ID": 8,
+            "Class Name": "Pest - Slugs",
+            "Precision": 93.41,
+            "Recall": 92.9,
+            "F1-Score": 93.15,
+            "Support": 183
+        },
+        {
+            "Class ID": 9,
+            "Class Name": "Pest - Snails",
+            "Precision": 97.57,
+            "Recall": 99.59,
+            "F1-Score": 98.57,
+            "Support": 242
+        },
+        {
+            "Class ID": 10,
+            "Class Name": "Pest - Stem Fly",
+            "Precision": 89.74,
+            "Recall": 85.37,
+            "F1-Score": 87.5,
+            "Support": 41
+        },
+        {
+            "Class ID": 11,
+            "Class Name": "Pest - Wasps",
+            "Precision": 92.18,
+            "Recall": 98.25,
+            "F1-Score": 95.12,
+            "Support": 228
+        },
+        {
+            "Class ID": 12,
+            "Class Name": "Pest - Weevils",
+            "Precision": 96.3,
+            "Recall": 98.11,
+            "F1-Score": 97.2,
+            "Support": 212
+        },
+        {
+            "Class ID": 13,
+            "Class Name": "Rice - Brown Spot",
+            "Precision": 70.59,
+            "Recall": 92.31,
+            "F1-Score": 80.0,
+            "Support": 13
+        },
+        {
+            "Class ID": 14,
+            "Class Name": "Rice - Healthy",
+            "Precision": 100.0,
+            "Recall": 98.59,
+            "F1-Score": 99.29,
+            "Support": 71
+        },
+        {
+            "Class ID": 15,
+            "Class Name": "Rice - Leaf Blast",
+            "Precision": 95.74,
+            "Recall": 95.74,
+            "F1-Score": 95.74,
+            "Support": 47
+        },
+        {
+            "Class ID": 16,
+            "Class Name": "Wheat - Black Point",
+            "Precision": 96.55,
+            "Recall": 100.0,
+            "F1-Score": 98.25,
+            "Support": 140
+        },
+        {
+            "Class ID": 17,
+            "Class Name": "Wheat - Blast",
+            "Precision": 84.32,
+            "Recall": 89.64,
+            "F1-Score": 86.9,
+            "Support": 222
+        },
+        {
+            "Class ID": 18,
+            "Class Name": "Wheat - Crown and Root Rot",
+            "Precision": 87.66,
+            "Recall": 86.56,
+            "F1-Score": 87.11,
+            "Support": 320
+        },
+        {
+            "Class ID": 19,
+            "Class Name": "Wheat - Fusarium Head Blight",
+            "Precision": 94.17,
+            "Recall": 93.39,
+            "F1-Score": 93.78,
+            "Support": 121
+        },
+        {
+            "Class ID": 20,
+            "Class Name": "Wheat - Healthy",
+            "Precision": 91.17,
+            "Recall": 85.74,
+            "F1-Score": 88.37,
+            "Support": 554
+        },
+        {
+            "Class ID": 21,
+            "Class Name": "Wheat - Leaf Blight",
+            "Precision": 83.53,
+            "Recall": 72.45,
+            "F1-Score": 77.6,
+            "Support": 294
+        },
+        {
+            "Class ID": 22,
+            "Class Name": "Wheat - Leaf Rust",
+            "Precision": 90.19,
+            "Recall": 70.44,
+            "F1-Score": 79.1,
+            "Support": 274
+        },
+        {
+            "Class ID": 23,
+            "Class Name": "Wheat - Loose Smut",
+            "Precision": 90.84,
+            "Recall": 90.84,
+            "F1-Score": 90.84,
+            "Support": 371
+        },
+        {
+            "Class ID": 24,
+            "Class Name": "Wheat - Powdery Mildew",
+            "Precision": 85.71,
+            "Recall": 87.1,
+            "F1-Score": 86.4,
+            "Support": 124
+        },
+        {
+            "Class ID": 25,
+            "Class Name": "Wheat - Septoria",
+            "Precision": 91.81,
+            "Recall": 93.42,
+            "F1-Score": 92.61,
+            "Support": 228
+        },
+        {
+            "Class ID": 26,
+            "Class Name": "Wheat - Stem Rust (Black Rust)",
+            "Precision": 53.46,
+            "Recall": 77.98,
+            "F1-Score": 63.43,
+            "Support": 109
+        },
+        {
+            "Class ID": 27,
+            "Class Name": "Wheat - Stripe Rust (Yellow Rust)",
+            "Precision": 91.53,
+            "Recall": 98.3,
+            "F1-Score": 94.79,
+            "Support": 176
+        },
+        {
+            "Class ID": 28,
+            "Class Name": "Wheat - Tan Spot",
+            "Precision": 41.18,
+            "Recall": 61.95,
+            "F1-Score": 49.47,
+            "Support": 113
+        }
+    ],
+    "top_confusions": [
+        {
+            "true_class": "Wheat - Leaf Rust",
+            "predicted_class": "Wheat - Stem Rust (Black Rust)",
+            "errors": 51
+        },
+        {
+            "true_class": "Wheat - Leaf Blight",
+            "predicted_class": "Wheat - Tan Spot",
+            "errors": 41
+        },
+        {
+            "true_class": "Wheat - Healthy",
+            "predicted_class": "Wheat - Blast",
+            "errors": 25
+        },
+        {
+            "true_class": "Wheat - Healthy",
+            "predicted_class": "Wheat - Loose Smut",
+            "errors": 16
+        },
+        {
+            "true_class": "Wheat - Leaf Blight",
+            "predicted_class": "Wheat - Septoria",
+            "errors": 16
+        },
+        {
+            "true_class": "Pest - Caterpillars",
+            "predicted_class": "Pest - Grasshoppers",
+            "errors": 15
+        },
+        {
+            "true_class": "Wheat - Healthy",
+            "predicted_class": "Wheat - Crown and Root Rot",
+            "errors": 14
+        },
+        {
+            "true_class": "Wheat - Tan Spot",
+            "predicted_class": "Wheat - Leaf Blight",
+            "errors": 11
+        },
+        {
+            "true_class": "Wheat - Leaf Rust",
+            "predicted_class": "Wheat - Tan Spot",
+            "errors": 10
+        },
+        {
+            "true_class": "Wheat - Tan Spot",
+            "predicted_class": "Wheat - Stem Rust (Black Rust)",
+            "errors": 10
+        },
+        {
+            "true_class": "Pest - Bees",
+            "predicted_class": "Pest - Wasps",
+            "errors": 9
+        },
+        {
+            "true_class": "Wheat - Crown and Root Rot",
+            "predicted_class": "Wheat - Healthy",
+            "errors": 9
+        },
+        {
+            "true_class": "Wheat - Crown and Root Rot",
+            "predicted_class": "Wheat - Tan Spot",
+            "errors": 9
+        },
+        {
+            "true_class": "Wheat - Healthy",
+            "predicted_class": "Wheat - Tan Spot",
+            "errors": 9
+        },
+        {
+            "true_class": "Wheat - Leaf Rust",
+            "predicted_class": "Wheat - Stripe Rust (Yellow Rust)",
+            "errors": 9
+        }
+    ],
+    "cross_domain_errors": [
+        {
+            "true_class": "Pest - Caterpillars",
+            "predicted_class": "Wheat - Crown and Root Rot",
+            "errors": 3
+        },
+        {
+            "true_class": "Pest - Earwigs",
+            "predicted_class": "Wheat - Crown and Root Rot",
+            "errors": 3
+        },
+        {
+            "true_class": "Pest - Grasshoppers",
+            "predicted_class": "Wheat - Healthy",
+            "errors": 3
+        },
+        {
+            "true_class": "Pest - Grasshoppers",
+            "predicted_class": "Wheat - Loose Smut",
+            "errors": 3
+        },
+        {
+            "true_class": "Pest - Stem Fly",
+            "predicted_class": "Wheat - Powdery Mildew",
+            "errors": 3
+        },
+        {
+            "true_class": "Wheat - Loose Smut",
+            "predicted_class": "Pest - Bees",
+            "errors": 2
+        },
+        {
+            "true_class": "Wheat - Loose Smut",
+            "predicted_class": "Pest - Earthworms",
+            "errors": 2
+        },
+        {
+            "true_class": "Wheat - Loose Smut",
+            "predicted_class": "Pest - Stem Fly",
+            "errors": 2
+        },
+        {
+            "true_class": "Wheat - Tan Spot",
+            "predicted_class": "Rice - Brown Spot",
+            "errors": 2
+        },
+        {
+            "true_class": "Pest - Beetles",
+            "predicted_class": "Wheat - Powdery Mildew",
+            "errors": 1
+        },
+        {
+            "true_class": "Pest - Caterpillars",
+            "predicted_class": "Wheat - Blast",
+            "errors": 1
+        },
+        {
+            "true_class": "Pest - Caterpillars",
+            "predicted_class": "Wheat - Healthy",
+            "errors": 1
+        },
+        {
+            "true_class": "Pest - Caterpillars",
+            "predicted_class": "Wheat - Leaf Rust",
+            "errors": 1
+        },
+        {
+            "true_class": "Pest - Caterpillars",
+            "predicted_class": "Wheat - Stem Rust (Black Rust)",
+            "errors": 1
+        },
+        {
+            "true_class": "Pest - Earthworms",
+            "predicted_class": "Wheat - Leaf Blight",
+            "errors": 1
+        },
+        {
+            "true_class": "Pest - Stem Fly",
+            "predicted_class": "Wheat - Leaf Blight",
+            "errors": 1
+        },
+        {
+            "true_class": "Pest - Stem Fly",
+            "predicted_class": "Wheat - Loose Smut",
+            "errors": 1
+        },
+        {
+            "true_class": "Wheat - Crown and Root Rot",
+            "predicted_class": "Pest - Bees",
+            "errors": 1
+        },
+        {
+            "true_class": "Wheat - Crown and Root Rot",
+            "predicted_class": "Pest - Earthworms",
+            "errors": 1
+        },
+        {
+            "true_class": "Wheat - Crown and Root Rot",
+            "predicted_class": "Pest - Grasshoppers",
+            "errors": 1
+        },
+        {
+            "true_class": "Wheat - Healthy",
+            "predicted_class": "Pest - Earthworms",
+            "errors": 1
+        },
+        {
+            "true_class": "Wheat - Healthy",
+            "predicted_class": "Pest - Slugs",
+            "errors": 1
+        },
+        {
+            "true_class": "Wheat - Leaf Rust",
+            "predicted_class": "Rice - Leaf Blast",
+            "errors": 1
+        },
+        {
+            "true_class": "Wheat - Tan Spot",
+            "predicted_class": "Pest - Caterpillars",
+            "errors": 1
+        }
+    ]
+}

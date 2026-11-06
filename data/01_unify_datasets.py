@@ -3,6 +3,9 @@ import re
 import json
 import random
 import time
+from concurrent.futures import ThreadPoolExecutor
+from PIL import Image
+import numpy as np
 import pandas as pd
 
 RAW_DIR = os.path.join("data", "raw")
@@ -19,6 +22,39 @@ EXCLUDED_CROPS = {"Squash", "Tea", "Blueberry", "Raspberry", "Soybean"}
 # Focus Mode: Filter exclusively for Rice, Wheat, and Pests (target crops and agricultural pests)
 ONLY_RICE_WHEAT_PESTS = True
 ALLOWED_CROPS = {"Rice", "Wheat"}
+
+# Real-Case Practical Filter: Exclude studio/lab photos with plain white background
+# Keeps only authentic real-world field images for practical deployment.
+FILTER_WHITE_BACKGROUND = True
+
+def is_white_background(img_path):
+    """
+    Detects if an image was shot in a studio or on a white/plain paper background
+    rather than under practical field conditions.
+    Checks outer border margins: if they are predominantly bright, neutral
+    white (RGB all > 195 with low color saturation), it flags the image as a white background.
+    """
+    try:
+        with Image.open(img_path) as im:
+            im.draft('RGB', (64, 64))
+            arr = np.array(im.convert('RGB'), dtype=np.uint8)
+            h, w, _ = arr.shape
+            bh, bw = max(1, int(h * 0.1)), max(1, int(w * 0.1))
+            top = arr[0:bh, :, :]
+            bot = arr[-bh:, :, :]
+            left = arr[:, 0:bw, :]
+            right = arr[:, -bw:, :]
+            borders = np.concatenate([
+                top.reshape(-1, 3),
+                bot.reshape(-1, 3),
+                left.reshape(-1, 3),
+                right.reshape(-1, 3)
+            ])
+            r, g, b = borders[:, 0], borders[:, 1], borders[:, 2]
+            is_w = (r > 195) & (g > 195) & (b > 195) & (np.maximum.reduce([np.abs(r-g), np.abs(g-b), np.abs(r-b)]) < 35)
+            return float(np.mean(is_w)) > 0.45
+    except Exception:
+        return False
 
 # 1. Cassava Disease Mapping (ammarali32/cassava-datasetv2 & competition train.csv)
 CASSAVA_MAP = {
@@ -47,25 +83,63 @@ RICE_MAP = {
     "narrow_brown_spot": "Rice - Narrow Brown Spot",
 }
 
-# 4. Wheat Disease Mapping (Wheat leaf disease datasets, Kaggle, LWDCD)
+# 4. Wheat Disease Mapping (Wheat leaf disease datasets, Kaggle, LWDCD, Wheat Diseases 14,155)
 WHEAT_MAP = {
+    # Healthy
     "wheat_healthy": "Wheat - Healthy",
     "healthy": "Wheat - Healthy",
+    "healthyleaf": "Wheat - Healthy",
+    "healthy_leaf": "Wheat - Healthy",
+    # Leaf Rust (Brown Rust)
     "wheat_leaf_rust": "Wheat - Leaf Rust",
     "leaf_rust": "Wheat - Leaf Rust",
     "brown_rust": "Wheat - Leaf Rust",
+    "brownrust": "Wheat - Leaf Rust",
+    # Stem Rust (Black Rust)
+    "wheat_black_rust": "Wheat - Stem Rust (Black Rust)",
+    "black_rust": "Wheat - Stem Rust (Black Rust)",
+    "blackrust": "Wheat - Stem Rust (Black Rust)",
+    # Stripe Rust (Yellow Rust)
+    "wheat_yellow_rust": "Wheat - Stripe Rust (Yellow Rust)",
+    "yellow_rust": "Wheat - Stripe Rust (Yellow Rust)",
+    "yellowrust": "Wheat - Stripe Rust (Yellow Rust)",
+    "stripe_rust": "Wheat - Stripe Rust (Yellow Rust)",
+    # Loose Smut / Smut
     "wheat_loose_smut": "Wheat - Loose Smut",
     "loose_smut": "Wheat - Loose Smut",
+    "smut": "Wheat - Loose Smut",
+    # Crown, Foot & Root Rot
     "wheat_crown_root_rot": "Wheat - Crown and Root Rot",
     "crown_and_root_rot": "Wheat - Crown and Root Rot",
     "wheat_crown_and_root_rot": "Wheat - Crown and Root Rot",
-    "wheat_yellow_rust": "Wheat - Stripe Rust (Yellow Rust)",
-    "yellow_rust": "Wheat - Stripe Rust (Yellow Rust)",
-    "stripe_rust": "Wheat - Stripe Rust (Yellow Rust)",
+    "fusariumfootrot": "Wheat - Crown and Root Rot",
+    "fusarium_foot_rot": "Wheat - Crown and Root Rot",
+    # Fusarium Head Blight
+    "fusarium_head_blight": "Wheat - Fusarium Head Blight",
+    "fusariumheadblight": "Wheat - Fusarium Head Blight",
+    # Septoria
     "wheat_septoria": "Wheat - Septoria",
     "septoria": "Wheat - Septoria",
+    # Powdery Mildew
     "powdery_mildew": "Wheat - Powdery Mildew",
     "wheat_powdery_mildew": "Wheat - Powdery Mildew",
+    "mildew": "Wheat - Powdery Mildew",
+    # Blast
+    "blast": "Wheat - Blast",
+    "wheatblast": "Wheat - Blast",
+    "wheat_blast": "Wheat - Blast",
+    # Leaf Blight
+    "leaf_blight": "Wheat - Leaf Blight",
+    "leafblight": "Wheat - Leaf Blight",
+    # Tan Spot
+    "tan_spot": "Wheat - Tan Spot",
+    "tanspot": "Wheat - Tan Spot",
+    # Black Point
+    "black_point": "Wheat - Black Point",
+    "blackpoint": "Wheat - Black Point",
+    # Stem fly (agricultural insect pest)
+    "stem_fly": "Pest - Stem Fly",
+    "stemfly": "Pest - Stem Fly",
 }
 
 # 4. Canonical PlantVillage & Disease-Dataset Mapping
@@ -311,11 +385,14 @@ def clean_label_name(folder_name, source_dataset, ip102_map):
             return RICE_MAP[name_lower]
 
     if "wheat" in s_lower:
-        name_lower = name.lower()
-        if name_lower in WHEAT_MAP:
-            return WHEAT_MAP[name_lower]
+        norm_key = re.sub(r"[\s_-]+", "_", name.lower()).strip("_")
+        norm_clean = norm_key.replace("_", "")
+        if norm_key in WHEAT_MAP:
+            return WHEAT_MAP[norm_key]
+        if norm_clean in WHEAT_MAP:
+            return WHEAT_MAP[norm_clean]
         clean = name.replace("___", " - ").replace("__", " - ").replace("_", " ").strip().title()
-        if not clean.lower().startswith("wheat"):
+        if not clean.lower().startswith("wheat") and not clean.lower().startswith("pest"):
             clean = f"Wheat - {clean}"
         return clean
 
@@ -411,11 +488,6 @@ def scan_all_datasets():
 
     df = pd.DataFrame(records)
 
-    # Filter out accidental tiny folders (< 10 images)
-    class_counts = df["label_name"].value_counts()
-    valid_classes = class_counts[class_counts >= 10].index
-    df = df[df["label_name"].isin(valid_classes)].copy()
-
     # Option B: Filter out incomplete crops lacking balanced healthy/diseased pairs
     if EXCLUDE_INCOMPLETE_CROPS:
         print(f"\n[Option B] Excluding incomplete crops without paired Healthy & Disease classes: {', '.join(sorted(EXCLUDED_CROPS))}", flush=True)
@@ -432,6 +504,33 @@ def scan_all_datasets():
             (df["label_name"].apply(lambda x: x.split(" - ")[0].strip() in ALLOWED_CROPS))
         ].copy()
         print(f"   -> Retained {len(df):,} images (filtered out {before_count - len(df):,} images from other crops).", flush=True)
+
+    # Real-Case Practical Filter: Purge studio/laboratory white-background images
+    if FILTER_WHITE_BACKGROUND:
+        print(f"\n[Real-Case Filter] Inspecting image borders and purging studio / white-background images...", flush=True)
+        t_wb = time.time()
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            is_white_flags = list(ex.map(is_white_background, df["image_path"].tolist()))
+        df["is_white_bg"] = is_white_flags
+        
+        num_white = df["is_white_bg"].sum()
+        print(f"   -> Detected and purged {num_white:,} white/studio background images in {time.time() - t_wb:.2f}s.", flush=True)
+        for src, grp in df.groupby("source"):
+            w_src = grp["is_white_bg"].sum()
+            print(f"      - {src}: {w_src:,} white-background purged ({len(grp) - w_src:,} real field images kept)", flush=True)
+        
+        df = df[~df["is_white_bg"]].drop(columns=["is_white_bg"]).copy()
+        print(f"   -> Total authentic in-field images remaining: {len(df):,}", flush=True)
+
+    # Filter out classes with insufficient real field samples (< 10 images)
+    class_counts = df["label_name"].value_counts()
+    valid_classes = class_counts[class_counts >= 10].index
+    removed_classes = class_counts[class_counts < 10]
+    if len(removed_classes) > 0:
+        print(f"\n[Clean-up] Removed classes with < 10 real-world samples (e.g. lab-only):", flush=True)
+        for cls_name, count in removed_classes.items():
+            print(f"   - {cls_name}: only {count} field sample(s) available", flush=True)
+    df = df[df["label_name"].isin(valid_classes)].copy()
 
     # Create master deterministic numeric IDs (0, 1, 2...)
     unique_labels = sorted(df["label_name"].unique())

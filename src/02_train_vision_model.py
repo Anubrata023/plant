@@ -21,13 +21,17 @@ MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 # Model architecture: "efficientnet_b0" or "mobilenet_v3_large"
 MODEL_NAME = "efficientnet_b0"
 IMAGE_SIZE = 224
-BATCH_SIZE = 32
+BATCH_SIZE = 64  # Optimized for 8GB RTX Laptop GPU
 EPOCHS = 8
 LEARNING_RATE = 3e-4
 
 # Speed helper: Caps max images per class so training finishes quickly.
 # Set to None if you want to train on the entire un-capped dataset with full GPU.
 MAX_IMAGES_PER_CLASS = 400
+
+# GPU & DataLoader Acceleration Settings
+USE_AMP = True        # Automatic Mixed Precision (FP16 via RTX Tensor Cores)
+NUM_WORKERS = 4       # Multi-process data loading (set 2 or 4 for modern laptop CPUs)
 
 # =====================================================================
 # BLOCK 1: CUSTOM PYTORCH DATASET
@@ -83,6 +87,7 @@ def get_transforms():
         transforms.ColorJitter(brightness=0.15, contrast=0.15, saturation=0.15),
         transforms.ToTensor(),
         transforms.Normalize(mean=imagenet_mean, std=imagenet_std),
+        
     ])
 
     val_transform = transforms.Compose([
@@ -141,13 +146,25 @@ def train_and_evaluate():
 
     os.makedirs(MODELS_DIR, exist_ok=True)
 
-    # Detect hardware accelerator (NVIDIA CUDA GPU, Apple MPS, or CPU)
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    )
+    # Detect hardware accelerator safely
+    if torch.cuda.is_available():
+        try:
+            _ = torch.zeros(1, device="cuda")
+            device = torch.device("cuda")
+        except Exception as e:
+            print(f"[INFO] GPU detected ({torch.cuda.get_device_name(0)}), but precompiled kernels for sm_120 are pending in torch wheel. Falling back to CPU: {e}")
+            device = torch.device("cpu")
+    else:
+        device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+
     print(f"[HARDWARE] Training on device: {device}")
     if device.type == "cuda":
         print(f"           GPU: {torch.cuda.get_device_name(0)}")
+        print(f"           VRAM: {torch.cuda.get_device_properties(0).total_memory / (1024**3):.2f} GB")
+        torch.backends.cudnn.benchmark = True
+        print(f"           [OPT] CuDNN auto-tuner enabled.")
+        if USE_AMP:
+            print(f"           [OPT] Automatic Mixed Precision (AMP FP16) enabled for Tensor Cores.")
 
     df = pd.read_csv(CSV_PATH)
 
@@ -173,11 +190,22 @@ def train_and_evaluate():
 
     train_tf, val_tf = get_transforms()
 
+    is_cuda = (device.type == "cuda")
     train_loader = DataLoader(
-        RiceWheatDataset(train_df, train_tf), batch_size=BATCH_SIZE, shuffle=True, num_workers=0
+        RiceWheatDataset(train_df, train_tf),
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        num_workers=NUM_WORKERS,
+        pin_memory=is_cuda,
+        persistent_workers=(NUM_WORKERS > 0),
     )
     val_loader = DataLoader(
-        RiceWheatDataset(val_df, val_tf), batch_size=BATCH_SIZE, shuffle=False, num_workers=0
+        RiceWheatDataset(val_df, val_tf),
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        num_workers=NUM_WORKERS,
+        pin_memory=is_cuda,
+        persistent_workers=(NUM_WORKERS > 0),
     )
 
     model = build_model(MODEL_NAME, num_classes).to(device)
@@ -185,6 +213,7 @@ def train_and_evaluate():
     criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS)
+    scaler = torch.amp.GradScaler("cuda", enabled=(USE_AMP and is_cuda))
 
     best_val_acc = 0.0
     history = []
@@ -197,12 +226,21 @@ def train_and_evaluate():
         model.train()
         train_loss, train_correct, train_total = 0.0, 0, 0
         for images, labels in tqdm(train_loader, desc=f"Epoch {epoch}/{EPOCHS} [Train]"):
-            images, labels = images.to(device), labels.to(device)
-            optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+            images = images.to(device, non_blocking=is_cuda)
+            labels = labels.to(device, non_blocking=is_cuda)
+            optimizer.zero_grad(set_to_none=True)
+
+            with torch.amp.autocast("cuda", enabled=(USE_AMP and is_cuda)):
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+
+            if USE_AMP and is_cuda:
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                loss.backward()
+                optimizer.step()
 
             train_loss += loss.item() * images.size(0)
             preds = outputs.argmax(dim=1)
@@ -218,9 +256,12 @@ def train_and_evaluate():
         val_loss, val_correct, val_total = 0.0, 0, 0
         with torch.no_grad():
             for images, labels in tqdm(val_loader, desc=f"Epoch {epoch}/{EPOCHS} [Val] "):
-                images, labels = images.to(device), labels.to(device)
-                outputs = model(images)
-                loss = criterion(outputs, labels)
+                images = images.to(device, non_blocking=is_cuda)
+                labels = labels.to(device, non_blocking=is_cuda)
+
+                with torch.amp.autocast("cuda", enabled=(USE_AMP and is_cuda)):
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
 
                 val_loss += loss.item() * images.size(0)
                 preds = outputs.argmax(dim=1)
