@@ -111,6 +111,68 @@ python src/03_train_method3.py
 
 ---
 
+### 4. Leaf Lesion & Severity Calculation (OpenCV)
+
+Quantifies foliar disease lesion coverage and pest defoliation according to standardized phytopathological scales (**IRRI SES** for Rice & **Modified Cobb** scale for Wheat rusts/blights):
+
+```powershell
+# Single image diagnostic inspection
+python src/03_severity_calculator.py --image path/to/leaf.jpg --disease "Wheat - Leaf Rust" --output models/annotated_leaf.jpg
+
+# Generate 4-panel diagnostic comparison canvas (Original, Leaf Mask, Lesion Mask, HUD Overlay)
+python src/03_severity_calculator.py --image path/to/leaf.jpg --disease "Wheat - Leaf Rust" --canvas models/diagnostic_canvas.jpg
+
+# Automated batch validation benchmark across 5 in-field dataset samples
+python src/03_severity_calculator.py --batch 5
+```
+
+| Grade | Severity Level | Lesion % Range | Clinical Agronomic Action |
+| :---: | :--- | :---: | :--- |
+| **0** | **Healthy** | 0.00% | Prophylactic monitoring; no intervention required |
+| **1** | **Mild** | 0.01% – 10.00% | Early curative window; spot treatment / bio-fungicides |
+| **2** | **Moderate** | 10.01% – 25.00% | Targeted fungicide / curative spray within 3–5 days |
+| **3** | **Severe** | 25.01% – 50.00% | Urgent systemic fungicide application within 24–48 hours |
+| **4** | **Critical** | > 50.00% | Emergency intervention; canopy necrosis catastrophic |
+
+---
+
+### 5. Offline SQLite Agricultural Knowledge Base
+
+Verified treatment database (`data/treatments.db`) providing localized, ICAR/IRRI/CIMMYT/USDA-standardized phytopathological remedies across all 29 classes:
+
+```powershell
+# Build or rebuild offline SQLite database
+python src/04_knowledge_base.py --build
+
+# Query specific disease with severity protocol
+python src/04_knowledge_base.py --query "Rice - Leaf Blast" --severity 3
+
+# Generate grounded context string for Llama-3.2-1B reasoning
+python src/04_knowledge_base.py --query "Wheat - Stripe Rust (Yellow Rust)" --severity 2 --context
+
+# List all 29 indexed crop conditions and pests
+python src/04_knowledge_base.py --list
+```
+
+---
+
+### 6. Llama-3.2-1B Agronomic Advisor & Clinical Reasoner
+
+Combines vision model diagnosis, OpenCV lesion severity percentages, and verified SQLite knowledge base context to produce personalized, hallucination-free clinical treatment reports:
+
+```powershell
+# Generate full clinical advisory for a specific diagnosis
+python src/05_llama_advisor.py --disease "Wheat - Stripe Rust (Yellow Rust)" --severity 3 --lesion 32.5
+
+# Run multi-class clinical reasoning benchmark across 5 diverse conditions
+python src/05_llama_advisor.py --batch
+
+# Generate structured JSON output for API or UI integration
+python src/05_llama_advisor.py --disease "Rice - Leaf Blast" --severity 2 --json
+```
+
+---
+
 ## 🍓 Edge Deployment: Raspberry Pi 4 Optimization
 
 The trained model is architected for seamless deployment on low-power ARM edge hardware (e.g. **Raspberry Pi 4** with Quad-Core Cortex-A72):
@@ -133,6 +195,7 @@ plant/
 ├── data/
 │   ├── 01_unify_datasets.py        # Multithreaded indexer & white-background purifier
 │   ├── class_names.json            # Master dictionary of 29 target classes
+│   ├── treatments.db               # Offline SQLite treatment database (all 29 classes)
 │   ├── unified_index.csv           # Stratified dataset index (28,833 field rows)
 │   └── raw/                        # Raw field datasets (excluded from git)
 │       ├── agropest_12/            # AgroPest-12 YOLO images and labels
@@ -147,7 +210,13 @@ plant/
 ├── src/
 │   ├── 02_train_vision_model.py    # Baseline PyTorch trainer with GPU AMP & CuDNN
 │   ├── 02b_evaluate_model.py       # Method 1 diagnostic auditor & confusion matrix
-│   └── 03_train_method3.py         # Method 3 trainer (Full Data + MixUp + Label Smoothing)
+│   ├── 03_severity_calculator.py   # OpenCV leaf lesion % & severity classifier
+│   ├── severity_calculator.py      # Standard Python import wrapper for module 03
+│   ├── 03_train_method3.py         # Method 3 trainer (Full Data + MixUp + Label Smoothing)
+│   ├── 04_knowledge_base.py        # Offline SQLite treatment database builder & query engine
+│   ├── knowledge_base.py           # Standard Python import wrapper for module 04
+│   ├── 05_llama_advisor.py         # Llama-3.2-1B agronomic reasoning & clinical advisory engine
+│   └── llama_advisor.py            # Standard Python import wrapper for module 05
 │
 ├── reference_repo/                 # Reference web client & MobileNet baseline
 │   ├── Crop_disease.py             # Inference server

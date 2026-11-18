@@ -21,6 +21,7 @@ __pycache__/
 *$py.class
 .ipynb_checkpoints/
 *.log
+models/severity_benchmark_outputs/
 
 # OS & Editor files
 .DS_Store
