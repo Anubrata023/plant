@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌾 Krishi-AI | In-Field Crop Health & Clinical Advisor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0f0d;
+      --surface-1: #111a15;
+      --surface-2: #17241d;
+      --surface-3: #1f3128;
+      --border: rgba(46, 204, 113, 0.18);
+      --border-focus: rgba(46, 204, 113, 0.5);
+      --primary: #2ecc71;
+      --primary-glow: rgba(46, 204, 113, 0.35);
+      --primary-dark: #27ae60;
+      --accent: #f39c12;
+      --accent-red: #e74c3c;
+      --accent-blue: #3498db;
+      --text-main: #f5f9f6;
+      --text-muted: #95a59d;
+      --text-dim: #607368;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.35);
+      --shadow-glow: 0 0 30px rgba(46, 204, 113, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 20%, #0d1a13 0%, var(--bg-dark) 80%);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: fixed;
+      top: -150px;
+      right: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(46, 204, 113, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-2 {
+      position: fixed;
+      bottom: -150px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(52, 152, 219, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: rgba(10, 15, 13, 0.82);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0.9rem 1.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+
+    .brand-text h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #ffffff 40%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .edge-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(46, 204, 113, 0.1);
+      border: 1px solid rgba(46, 204, 113, 0.25);
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--primary);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .lang-switcher {
+      display: flex;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 2px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn.active {
+      background: var(--surface-3);
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 2rem 1.8rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(23, 36, 29, 0.7) 0%, rgba(17, 26, 21, 0.9) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.8rem 2.2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .hero-banner-content h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.3rem;
+    }
+
+    .hero-banner-content p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      max-width: 780px;
+    }
+
+    .tech-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tech-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.3rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+
+    /* Grid Layout: 2 Columns */
+    .app-grid {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1100px) {
+      .app-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Panel: Upload & Input */
+    .card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.6rem;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .card-title span.badge-num {
+      width: 24px;
+      height: 24px;
+      background: var(--surface-3);
+      color: var(--primary);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* Dropzone */
+    .dropzone {
+      border: 2px dashed rgba(46, 204, 113, 0.3);
+      border-radius: var(--radius-md);
+      padding: 2.2rem 1.4rem;
+      text-align: center;
+      background: var(--surface-2);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--primary);
+      background: rgba(46, 204, 113, 0.06);
+      box-shadow: 0 0 20px rgba(46, 204, 113, 0.15);
+    }
+
+    .dropzone-icon {
+      font-size: 2.8rem;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .dropzone-text {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.3rem;
+    }
+
+    .dropzone-subtext {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    /* Image Preview Container */
+    .preview-box {
+      margin-top: 1rem;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      display: none;
+      position: relative;
+      background: #000;
+    }
+
+    .preview-box img {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .preview-overlay-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    /* Quick Samples */
+    .samples-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      margin: 1.4rem 0 0.6rem;
+    }
+
+    .samples-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+
+    .sample-pill {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.8rem;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .sample-pill:hover {
+      background: var(--surface-3);
+      color: var(--text-main);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* Question Input */
+    .question-box {
+      margin-top: 1.2rem;
+    }
+
+    .question-box label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .question-box input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.7rem 0.9rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .question-box input:focus {
+      border-color: var(--primary);
+    }
+
+    /* Submit Button */
+    .btn-diagnose {
+      width: 100%;
+      margin-top: 1.4rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #07190d;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 0.95rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      box-shadow: 0 4px 18px var(--primary-glow);
+      transition: all 0.25s ease;
+    }
+
+    .btn-diagnose:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px var(--primary-glow);
+    }
+
+    .btn-diagnose:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Right Panel: Clinical Results */
+    .results-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+      background: var(--surface-1);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-lg);
+      padding: 5rem 2rem;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state-icon {
+      font-size: 3.5rem;
+      opacity: 0.5;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    /* Loader Card */
+    .loading-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 4rem 2rem;
+      text-align: center;
+      display: none;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(46, 204, 113, 0.15);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 1.2rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Top Summary Bar */
+    .clinical-banner {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.6rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.2rem;
+      box-shadow: var(--shadow-subtle);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .clinical-banner::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: var(--primary);
+      border-radius: 6px 0 0 6px;
+    }
+
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .metric-val {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .metric-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* Visual Inspection Card */
+    .visualizer-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.4rem;
+      overflow: hidden;
+    }
+
+    .visualizer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .vis-tabs {
+      display: flex;
+      gap: 0.4rem;
+      background: var(--surface-2);
+      padding: 3px;
+      border-radius: var(--radius-sm);
+    }
+
+    .vis-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .vis-tab-btn.active {
+      background: var(--surface-3);
+      color: var(--primary);
+    }
+
+    .visualizer-viewport {
+      width: 100%;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      max-height: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .visualizer-viewport img {
+      max-width: 100%;
+      max-height: 480px;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Tabs for Clinical Remedies */
+    .tabs-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.6rem;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .tab-headers {
+      display: flex;
+      gap: 0.6rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem;
+      margin-bottom: 1.4rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .tab-nav-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tab-nav-btn.active {
+      background: var(--surface-2);
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    /* Tab Contents */
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Treatment Cards */
+    .treatment-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .treatment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .treatment-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .treatment-badge {
+      background: rgba(46, 204, 113, 0.12);
+      color: var(--primary);
+      border: 1px solid rgba(46, 204, 113, 0.3);
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .treatment-row {
+      display: flex;
+      margin-bottom: 0.35rem;
+      font-size: 0.85rem;
+    }
+
+    .treatment-key {
+      width: 140px;
+      color: var(--text-dim);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .treatment-val {
+      color: var(--text-muted);
+    }
+
+    /* Dr. Krishi Advisor Tab */
+    .advisor-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.6rem;
+      line-height: 1.7;
+      font-size: 0.92rem;
+      position: relative;
+    }
+
+    .advisor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .advisor-avatar {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .avatar-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--accent) 0%, #e67e22 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .btn-voice {
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 0.5rem 0.9rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-voice:hover {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+    }
+
+    .btn-voice.speaking {
+      background: var(--accent-red);
+      color: #fff;
+      border-color: var(--accent-red);
+      animation: pulse 1s infinite;
+    }
+
+    /* Chat with Advisor Section */
+    .chat-section {
+      margin-top: 1.4rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.2rem;
+    }
+
+    .chat-form {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .chat-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-chat {
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      color: var(--primary);
+      padding: 0 1.2rem;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-chat:hover {
+      background: var(--primary);
+      color: #000;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.8rem;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.82rem;
+      margin-top: 4rem;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-container">
+      <a href="/" class="brand">
+        <div class="brand-icon">🌾</div>
+        <div class="brand-text">
+          <h1>KRISHI-AI</h1>
+          <p id="t-tagline">Clinical Crop Pathology & Autonomous Advisor</p>
+        </div>
+      </a>
+      <div class="nav-right">
+        <div class="edge-badge">
+          <div class="pulse-dot"></div>
+          <span id="t-offline-badge">Local Edge Active (Zero Cloud)</span>
+        </div>
+        <div class="lang-switcher">
+          <button class="lang-btn active" onclick="setLanguage('en')">EN</button>
+          <button class="lang-btn" onclick="setLanguage('hi')">हिन्दी</button>
+          <button class="lang-btn" onclick="setLanguage('bn')">বাংলা</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <div class="hero-banner-content">
+        <h2 id="t-hero-title">🌾 AI-Powered Cereal Health & Severity Assessment</h2>
+        <p id="t-hero-desc">
+          Upload authentic in-field foliage photos of Rice or Wheat to detect diseases, compute precise physical leaf lesion surface area, and receive verified curative prescriptions.
+        </p>
+      </div>
+      <div class="tech-badges">
+        <div class="tech-pill">EfficientNet-B0</div>
+        <div class="tech-pill">OpenCV Severity</div>
+        <div class="tech-pill">SQLite Treatments</div>
+        <div class="tech-pill">Llama-3.2-1B</div>
+      </div>
+    </section>
+
+    <!-- App Layout: 2 Columns -->
+    <div class="app-grid">
+      <!-- Left Column: Input Panel -->
+      <div class="card">
+        <div class="card-title">
+          <span class="badge-num">1</span>
+          <span id="t-upload-title">Inspect Crop Foliage</span>
+        </div>
+
+        <form id="diagnoseForm">
+          <!-- Dropzone -->
+          <div class="dropzone" id="dropzone">
+            <span class="dropzone-icon">🍃</span>
+            <div class="dropzone-text" id="t-drop-text">Click or Drag & Drop Foliage Photo</div>
+            <div class="dropzone-subtext" id="t-drop-sub">Supports JPEG, PNG (Wheat, Rice, or Pest)</div>
+            <input type="file" id="fileInput" name="image" accept="image/*">
+          </div>
+
+          <!-- Image Preview -->
+          <div class="preview-box" id="previewBox">
+            <img id="previewImg" src="" alt="Selected leaf">
+            <button type="button" class="preview-overlay-btn" onclick="clearImage()">✕ Remove</button>
+          </div>
+
+          <!-- One-Click Demo Samples -->
+          <div class="samples-title" id="t-samples-label">⚡ One-Click Demo Field Samples</div>
+          <div class="samples-grid">
+            <button type="button" class="sample-pill" onclick="loadSample('wheat_rust')">
+              <span>🌾</span> <span>Wheat Leaf Rust</span>
+            </button>
+            <button type="button" class="sample-pill" onclick="loadSample('rice_blast')">
+              <span>🍚</span> <span>Rice Leaf Blast</span>
+            </button>
+            <button type="button" class="sample-pill" onclick="loadSample('rice_spot')">
+              <span>🍂</span> <span>Rice Brown Spot</span>
+            </button>
+            <button type="button" class="sample-pill" onclick="loadSample('caterpillar')">
+              <span>🐛</span> <span>Pest Caterpillar</span>
+            </button>
+          </div>
+
+          <!-- Specific Farmer Query -->
+          <div class="question-box">
+            <label for="farmerQuestion" id="t-query-label">Optional Farmer Query for Dr. Krishi</label>
+            <input type="text" id="farmerQuestion" name="question" placeholder="e.g. Can I spray today? Give organic remedy...">
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-diagnose" id="submitBtn">
+            <span>🔬</span> <span id="t-btn-diagnose">Diagnose & Generate Advisory</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Column: Results Dashboard -->
+      <div class="results-container">
+        <!-- Empty Placeholder -->
+        <div class="empty-state" id="emptyState">
+          <span class="empty-state-icon">🌱</span>
+          <h3 id="t-empty-title">No Crop Foliage Evaluated Yet</h3>
+          <p id="t-empty-desc">Upload a leaf photo or click a demo sample on the left to begin complete tri-modal diagnosis.</p>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-card" id="loadingCard">
+          <div class="spinner"></div>
+          <h3 id="t-loading-title">Analyzing Crop Pathology...</h3>
+          <p id="t-loading-desc" style="color: var(--text-dim); font-size: 0.88rem; margin-top: 0.4rem;">
+            Executing Vision Forward Pass $\rightarrow$ OpenCV Multi-Space Segmentation $\rightarrow$ SQLite Query $\rightarrow$ Llama Reasoning
+          </p>
+        </div>
+
+        <!-- Active Results Panel -->
+        <div id="resultsContent" style="display: none; display: flex; flex-direction: column; gap: 1.4rem;">
+          <!-- 1. Top Clinical Summary Bar -->
+          <div class="clinical-banner" id="clinicalBanner">
+            <div class="metric-item">
+              <span class="metric-label" id="t-card-diagnosis">Clinical Diagnosis</span>
+              <span class="metric-val" id="resDiagnosis">Wheat - Leaf Rust</span>
+              <span class="metric-sub" id="resConfidence">Confidence: 98.4%</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label" id="t-card-severity">Foliar Lesion Spread</span>
+              <span class="metric-val" id="resSeverity">18.37%</span>
+              <span class="metric-sub" id="resGrade">Moderate (Grade 2)</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label" id="t-card-urgency">Action Urgency</span>
+              <span class="metric-val" id="resUrgency" style="color: var(--accent);">Action within 24 hrs</span>
+              <span class="metric-sub" id="t-card-curative">Curative Window Active</span>
+            </div>
+          </div>
+
+          <!-- 2. Visual Inspection Card -->
+          <div class="visualizer-card">
+            <div class="visualizer-nav">
+              <div class="card-title" style="margin: 0; font-size: 0.95rem;">
+                <span class="badge-num">2</span>
+                <span id="t-card-vis-title">Physical Diagnostic Visualization</span>
+              </div>
+              <div class="vis-tabs">
+                <button type="button" class="vis-tab-btn active" onclick="switchVisTab('overlay')">Annotated Overlay</button>
+                <button type="button" class="vis-tab-btn" onclick="switchVisTab('canvas')">4-Panel Canvas</button>
+                <button type="button" class="vis-tab-btn" onclick="switchVisTab('original')">Original Photo</button>
+              </div>
+            </div>
+            <div class="visualizer-viewport">
+              <img id="visImgOverlay" src="" alt="Diagnostic overlay">
+              <img id="visImgCanvas" src="" alt="4-panel canvas" style="display: none;">
+              <img id="visImgOriginal" src="" alt="Original leaf" style="display: none;">
+            </div>
+          </div>
+
+          <!-- 3. Clinical Remedies & Llama Advisor Tabs -->
+          <div class="tabs-card">
+            <div class="tab-headers">
+              <button type="button" class="tab-nav-btn active" onclick="switchTab('tab-chem')">
+                <span>💊</span> <span id="t-tab-chem">Curative Chemical</span>
+              </button>
+              <button type="button" class="tab-nav-btn" onclick="switchTab('tab-org')">
+                <span>🍃</span> <span id="t-tab-org">Organic / Bio-Control</span>
+              </button>
+              <button type="button" class="tab-nav-btn" onclick="switchTab('tab-cult')">
+                <span>🚜</span> <span id="t-tab-cult">Cultural & Seeds</span>
+              </button>
+              <button type="button" class="tab-nav-btn" onclick="switchTab('tab-advisor')">
+                <span>🤖</span> <span id="t-tab-advisor">Dr. Krishi Advisory</span>
+              </button>
+            </div>
+
+            <!-- Tab 1: Chemical -->
+            <div class="tab-pane active" id="tab-chem">
+              <div id="chemContent"></div>
+            </div>
+
+            <!-- Tab 2: Organic -->
+            <div class="tab-pane" id="tab-org">
+              <div id="orgContent"></div>
+            </div>
+
+            <!-- Tab 3: Cultural & Seeds -->
+            <div class="tab-pane" id="tab-cult">
+              <div id="cultContent"></div>
+            </div>
+
+            <!-- Tab 4: Dr. Krishi Advisor -->
+            <div class="tab-pane" id="tab-advisor">
+              <div class="advisor-box">
+                <div class="advisor-header">
+                  <div class="advisor-avatar">
+                    <div class="avatar-icon">👨‍🌾</div>
+                    <div>
+                      <strong style="color: var(--text-main);">Dr. Krishi (Llama-3.2-1B-Instruct)</strong>
+                      <div style="font-size: 0.76rem; color: var(--text-dim);" id="resBackend">Engine: Local Offline Clinical Engine</div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-voice" id="voiceBtn" onclick="toggleVoice()">
+                    <span id="voiceIcon">🔊</span> <span id="t-voice-btn">Read Aloud</span>
+                  </button>
+                </div>
+                <div id="advisorMarkdown" style="white-space: pre-line;"></div>
+              </div>
+
+              <!-- Interactive Farmer Chat -->
+              <div class="chat-section">
+                <form id="chatForm" class="chat-form">
+                  <input type="text" id="chatInput" class="chat-input" placeholder="Ask Dr. Krishi follow-up question about this diagnosis...">
+                  <button type="submit" class="btn-chat" id="t-chat-send">Ask</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 Krishi-AI. Developed for Offline In-Field Edge Deployment (Raspberry Pi 4 & Mobile). Powered by PyTorch & Llama-3.2.</p>
+  </footer>
+
+  <script>
+    // Global State
+    let currentData = null;
+    let currentLang = 'en';
+    let isSpeaking = false;
+    let synth = window.speechSynthesis;
+
+    // Translations Dictionary
+    const I18N = {
+      en: {
+        tagline: "Clinical Crop Pathology & Autonomous Advisor",
+        offlineBadge: "Local Edge Active (Zero Cloud)",
+        heroTitle: "🌾 AI-Powered Cereal Health & Severity Assessment",
+        heroDesc: "Upload authentic in-field foliage photos of Rice or Wheat to detect diseases, compute precise physical leaf lesion surface area, and receive verified curative prescriptions.",
+        uploadTitle: "Inspect Crop Foliage",
+        dropText: "Click or Drag & Drop Foliage Photo",
+        dropSub: "Supports JPEG, PNG (Wheat, Rice, or Pest)",
+        samplesLabel: "⚡ One-Click Demo Field Samples",
+        queryLabel: "Optional Farmer Query for Dr. Krishi",
+        btnDiagnose: "Diagnose & Generate Advisory",
+        emptyTitle: "No Crop Foliage Evaluated Yet",
+        emptyDesc: "Upload a leaf photo or click a demo sample on the left to begin complete tri-modal diagnosis.",
+        loadingTitle: "Analyzing Crop Pathology...",
+        cardDiagnosis: "Clinical Diagnosis",
+        cardSeverity: "Foliar Lesion Spread",
+        cardUrgency: "Action Urgency",
+        cardCurative: "Curative Window Active",
+        cardVisTitle: "Physical Diagnostic Visualization",
+        tabChem: "Curative Chemical",
+        tabOrg: "Organic / Bio-Control",
+        tabCult: "Cultural & Seeds",
+        tabAdvisor: "Dr. Krishi Advisory",
+        voiceBtn: "Read Aloud",
+        chatSend: "Ask"
+      },
+      hi: {
+        tagline: "फसल रोग निदान एवं स्वायत्त कृषि सलाहकार",
+        offlineBadge: "लोकल एज सक्रिय (शून्य क्लाउड)",
+        heroTitle: "🌾 एआई-संचालित फसल स्वास्थ्य एवं गंभीरता मूल्यांकन",
+        heroDesc: "गेहूं और धान की पत्तियों की तस्वीर अपलोड करें, रोग का पता लगाएं, घाव के सटीक क्षेत्रफल का प्रतिशत मापें और विशेषज्ञ उपचार प्राप्त करें।",
+        uploadTitle: "फसल की पत्ती का निरीक्षण करें",
+        dropText: "पत्ती की तस्वीर क्लिक या ड्रैग करें",
+        dropSub: "गेहूं, धान या कीट की तस्वीर (JPEG, PNG)",
+        samplesLabel: "⚡ एक-क्लिक डेमो नमूने",
+        queryLabel: "डॉ. कृषि से कोई विशेष प्रश्न (वैकल्पिक)",
+        btnDiagnose: "रोग पहचानें और सलाह प्राप्त करें",
+        emptyTitle: "अभी तक किसी पत्ती का विश्लेषण नहीं हुआ",
+        emptyDesc: "शुरू करने के लिए बाईं ओर से तस्वीर अपलोड करें या डेमो नमूने पर क्लिक करें।",
+        loadingTitle: "फसल रोग का विश्लेषण हो रहा है...",
+        cardDiagnosis: "रोग निदान",
+        cardSeverity: "प्रभावित क्षेत्रफल",
+        cardUrgency: "उपचार की तात्कालिकता",
+        cardCurative: "उपचार खिड़की सक्रिय",
+        cardVisTitle: "भौतिक घाव दृश्य निरीक्षण",
+        tabChem: "रासायनिक उपचार",
+        tabOrg: "जैविक / बायो-कंट्रोल",
+        tabCult: "कृषि विधियाँ एवं बीज",
+        tabAdvisor: "डॉ. कृषि सलाहकार",
+        voiceBtn: "आवाज में सुनें",
+        chatSend: "पूछें"
+      },
+      bn: {
+        tagline: "ফসলের রোগ নির্ণয় ও স্বায়ত্তশাসিত কৃষি পরামর্শক",
+        offlineBadge: "লোকাল এজ সক্রিয় (ক্লাউড ছাড়া)",
+        heroTitle: "🌾 এআই-চালিত ফসলের স্বাস্থ্য ও তীব্রতা পরিমাপ",
+        heroDesc: "ধান বা গমের পাতার ছবি আপলোড করে রোগ শনাক্ত করুন, ক্ষতের সঠিক ক্ষেত্রফল পরিমাপ করুন এবং অনুমোদিত চিকিৎসার পরামর্শ পান।",
+        uploadTitle: "ফসলের পাতা পরিদর্শন করুন",
+        dropText: "পাতার ছবি ক্লিক বা ড্র্যাগ করুন",
+        dropSub: "গম, ধান বা কীটপতঙ্গের ছবি (JPEG, PNG)",
+        samplesLabel: "⚡ এক-ক্লিক ডেমো নমুনা",
+        queryLabel: "ডঃ কৃশির জন্য কোনো প্রশ্ন (ঐচ্ছিক)",
+        btnDiagnose: "রোগ নির্ণয় ও পরামর্শ নিন",
+        emptyTitle: "এখনও কোনো পাতা পরীক্ষা করা হয়নি",
+        emptyDesc: "শুরু করতে বাম পাশ থেকে ছবি আপলোড করুন বা ডেমো নমুনায় ক্লিক করুন।",
+        loadingTitle: "রোগ বিশ্লেষণ করা হচ্ছে...",
+        cardDiagnosis: "রোগ নির্ণয়",
+        cardSeverity: "ক্ষতের ক্ষেত্রফল",
+        cardUrgency: "জরুরী পদক্ষেপ",
+        cardCurative: "চিকিৎসার সময় সক্রিয়",
+        cardVisTitle: "শারীরিক ক্ষত পরিদর্শন",
+        tabChem: "রাসায়নিক চিকিৎসা",
+        tabOrg: "জৈব / বায়ো-কন্ট্রোল",
+        tabCult: "চাষাবাদ ও বীজ",
+        tabAdvisor: "ডঃ কৃশি পরামর্শক",
+        voiceBtn: "শুনে নিন",
+        chatSend: "জিজ্ঞাসা করুন"
+      }
+    };
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const d = I18N[lang];
+      document.getElementById('t-tagline').innerText = d.tagline;
+      document.getElementById('t-offline-badge').innerText = d.offlineBadge;
+      document.getElementById('t-hero-title').innerText = d.heroTitle;
+      document.getElementById('t-hero-desc').innerText = d.heroDesc;
+      document.getElementById('t-upload-title').innerText = d.uploadTitle;
+      document.getElementById('t-drop-text').innerText = d.dropText;
+      document.getElementById('t-drop-sub').innerText = d.dropSub;
+      document.getElementById('t-samples-label').innerText = d.samplesLabel;
+      document.getElementById('t-query-label').innerText = d.queryLabel;
+      document.getElementById('t-btn-diagnose').innerText = d.btnDiagnose;
+      document.getElementById('t-empty-title').innerText = d.emptyTitle;
+      document.getElementById('t-empty-desc').innerText = d.emptyDesc;
+      document.getElementById('t-loading-title').innerText = d.loadingTitle;
+      document.getElementById('t-card-diagnosis').innerText = d.cardDiagnosis;
+      document.getElementById('t-card-severity').innerText = d.cardSeverity;
+      document.getElementById('t-card-urgency').innerText = d.cardUrgency;
+      document.getElementById('t-card-curative').innerText = d.cardCurative;
+      document.getElementById('t-card-vis-title').innerText = d.cardVisTitle;
+      document.getElementById('t-tab-chem').innerText = d.tabChem;
+      document.getElementById('t-tab-org').innerText = d.tabOrg;
+      document.getElementById('t-tab-cult').innerText = d.tabCult;
+      document.getElementById('t-tab-advisor').innerText = d.tabAdvisor;
+      document.getElementById('t-voice-btn').innerText = d.voiceBtn;
+      document.getElementById('t-chat-send').innerText = d.chatSend;
+    }
+
+    // Dropzone Events
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const previewBox = document.getElementById('previewBox');
+    const previewImg = document.getElementById('previewImg');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        fileInput.files = e.dataTransfer.files;
+        showPreview(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', function () {
+      if (this.files && this.files[0]) {
+        showPreview(this.files[0]);
+      }
+    });
+
+    function showPreview(file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        previewImg.src = e.target.result;
+        previewBox.style.display = 'block';
+        dropzone.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearImage() {
+      fileInput.value = '';
+      previewImg.src = '';
+      previewBox.style.display = 'none';
+      dropzone.style.display = 'block';
+    }
+
+    // Tabs Control (Results Section)
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function switchVisTab(type) {
+      document.querySelectorAll('.vis-tab-btn').forEach(b => b.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      document.getElementById('visImgOverlay').style.display = (type === 'overlay') ? 'block' : 'none';
+      document.getElementById('visImgCanvas').style.display = (type === 'canvas') ? 'block' : 'none';
+      document.getElementById('visImgOriginal').style.display = (type === 'original') ? 'block' : 'none';
+    }
+
+    // Form Submission: Run Live Diagnosis
+    document.getElementById('diagnoseForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!fileInput.files || !fileInput.files[0]) {
+        alert('Please select or drop an image file first!');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', fileInput.files[0]);
+      formData.append('question', document.getElementById('farmerQuestion').value);
+      formData.append('language', currentLang);
+
+      showLoading(true);
+
+      try {
+        const response = await fetch('/api/diagnose', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+          renderDiagnosis(data);
+        } else {
+          alert('Diagnosis failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error connecting to diagnosis server: ' + err.message);
+      } finally {
+        showLoading(false);
+      }
+    });
+
+    // Load One-Click Demo Sample
+    async function loadSample(sampleKey) {
+      showLoading(true);
+      try {
+        const response = await fetch(`/api/sample/${sampleKey}?language=${currentLang}`);
+        const data = await response.json();
+        if (data.status === 'success') {
+          // Update preview box with sample original
+          previewImg.src = data.original_base64 || data.overlay_base64;
+          previewBox.style.display = 'block';
+          dropzone.style.display = 'none';
+          renderDiagnosis(data);
+        } else {
+          alert('Failed to load sample: ' + data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error loading sample: ' + err.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function showLoading(isLoading) {
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('loadingCard').style.display = isLoading ? 'block' : 'none';
+      if (isLoading) {
+        document.getElementById('resultsContent').style.display = 'none';
+        document.getElementById('submitBtn').disabled = true;
+      } else {
+        document.getElementById('submitBtn').disabled = false;
+      }
+    }
+
+    // Render Full Diagnostic Results
+    function renderDiagnosis(data) {
+      currentData = data;
+      document.getElementById('resultsContent').style.display = 'flex';
+
+      const vis = data.vision;
+      const sev = data.severity;
+      const adv = data.advisory;
+      const kb = data.knowledge_base || {};
+
+      // 1. Top Clinical Banner
+      document.getElementById('resDiagnosis').innerText = vis.predicted_class;
+      document.getElementById('resConfidence').innerText = `Confidence: ${(vis.confidence * 100).toFixed(1)}%`;
+      document.getElementById('resSeverity').innerText = `${sev.lesion_percentage.toFixed(2)}%`;
+      document.getElementById('resGrade').innerText = `${sev.severity_level} (Grade ${sev.severity_grade})`;
+      document.getElementById('resUrgency').innerText = adv.urgency || 'Action Required';
+
+      // Border indicator color
+      const banner = document.getElementById('clinicalBanner');
+      banner.style.setProperty('--primary', sev.color_hex || '#2ecc71');
+
+      // 2. Images in Visualizer
+      document.getElementById('visImgOverlay').src = data.overlay_base64 || '';
+      document.getElementById('visImgCanvas').src = data.canvas_base64 || '';
+      document.getElementById('visImgOriginal').src = data.original_base64 || previewImg.src;
+
+      // 3. Tab 1: Chemical Treatments
+      const chemDiv = document.getElementById('chemContent');
+      if (kb.chemical_treatments && kb.chemical_treatments.length > 0) {
+        chemDiv.innerHTML = kb.chemical_treatments.map((c, i) => `
+          <div class="treatment-item">
+            <div class="treatment-header">
+              <span class="treatment-title">${i + 1}. ${c.title}</span>
+              <span class="treatment-badge">Prescription Chem</span>
+            </div>
+            <div class="treatment-row"><span class="treatment-key">Active Ingredient:</span><span class="treatment-val"><code>${c.active_ingredient || 'N/A'}</code></span></div>
+            <div class="treatment-row"><span class="treatment-key">Commercial Brands:</span><span class="treatment-val">${c.commercial_names || 'N/A'}</span></div>
+            <div class="treatment-row"><span class="treatment-key">Dosage & Dilution:</span><span class="treatment-val"><strong>${c.dosage}</strong></span></div>
+            <div class="treatment-row"><span class="treatment-key">Application Timing:</span><span class="treatment-val">${c.application_timing || 'Foliar spray'}</span></div>
+            <div class="treatment-row"><span class="treatment-key">Safety / PHI:</span><span class="treatment-val" style="color: var(--accent);">${c.safety_precaution || 'Standard safety'}</span></div>
+          </div>
+        `).join('');
+      } else {
+        chemDiv.innerHTML = `<p style="color: var(--text-muted); padding: 1rem;">No chemical intervention needed for this health status.</p>`;
+      }
+
+      // 4. Tab 2: Organic / Bio-Control
+      const orgDiv = document.getElementById('orgContent');
+      if (kb.biological_treatments && kb.biological_treatments.length > 0) {
+        orgDiv.innerHTML = kb.biological_treatments.map((o, i) => `
+          <div class="treatment-item" style="border-left: 4px solid var(--primary);">
+            <div class="treatment-header">
+              <span class="treatment-title">${i + 1}. ${o.title}</span>
+              <span class="treatment-badge" style="background: rgba(46, 204, 113, 0.2);">Organic IPM</span>
+            </div>
+            <div class="treatment-row"><span class="treatment-key">Bio-Agent:</span><span class="treatment-val"><code>${o.active_ingredient || 'Natural Extract'}</code></span></div>
+            <div class="treatment-row"><span class="treatment-key">Application Dosage:</span><span class="treatment-val"><strong>${o.dosage}</strong></span></div>
+            <div class="treatment-row"><span class="treatment-key">Timing:</span><span class="treatment-val">${o.application_timing || 'Foliar application'}</span></div>
+          </div>
+        `).join('');
+      } else {
+        orgDiv.innerHTML = `<p style="color: var(--text-muted); padding: 1rem;">No organic bio-fungicides recorded for this condition.</p>`;
+      }
+
+      // 5. Tab 3: Cultural & Seeds
+      const cultDiv = document.getElementById('cultContent');
+      let cultHTML = '';
+      if (kb.cultural_treatments && kb.cultural_treatments.length > 0) {
+        cultHTML += `<h4 style="font-size: 0.95rem; margin-bottom: 0.6rem; color: var(--primary);">🚜 Agronomic Management</h4>`;
+        cultHTML += kb.cultural_treatments.map(cu => `
+          <div class="treatment-item">
+            <strong>${cu.title}</strong>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">${cu.dosage}</p>
+          </div>
+        `).join('');
+      }
+      if (kb.resistant_varieties && kb.resistant_varieties.length > 0) {
+        cultHTML += `<h4 style="font-size: 0.95rem; margin: 1rem 0 0.6rem; color: var(--accent);">🌾 Certified Resistant Cultivars</h4>`;
+        cultHTML += `<div style="background: var(--surface-2); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <p style="font-size: 0.88rem; color: var(--text-main);">${kb.resistant_varieties.join(', ')}</p>
+        </div>`;
+      }
+      cultDiv.innerHTML = cultHTML || `<p style="color: var(--text-muted);">Standard agronomy applies.</p>`;
+
+      // 6. Tab 4: Dr. Krishi Advisor
+      document.getElementById('resBackend').innerText = `Engine: ${adv.backend_used || 'Grounded Clinical Engine'}`;
+      document.getElementById('advisorMarkdown').innerText = adv.full_advisory_text || adv.action_protocol || 'No advisory generated.';
+
+      // Stop previous speech if any
+      if (synth && synth.speaking) {
+        synth.cancel();
+      }
+    }
+
+    // Web Speech API: Voice Narration
+    function toggleVoice() {
+      if (!synth) {
+        alert('Web Speech API is not supported in this browser.');
+        return;
+      }
+
+      const voiceBtn = document.getElementById('voiceBtn');
+      const voiceIcon = document.getElementById('voiceIcon');
+
+      if (synth.speaking) {
+        synth.cancel();
+        voiceBtn.classList.remove('speaking');
+        voiceIcon.innerText = '🔊';
+        return;
+      }
+
+      const textToRead = document.getElementById('advisorMarkdown').innerText;
+      if (!textToRead) return;
+
+      // Extract a clean spoken summary
+      const cleanSpeech = textToRead
+        .replace(/[#*`>_]/g, '')
+        .replace(/\n\s*\n/g, '. ');
+
+      const utterance = new SpeechSynthesisUtterance(cleanSpeech);
+      
+      // Select appropriate language voice
+      if (currentLang === 'hi') {
+        utterance.lang = 'hi-IN';
+      } else if (currentLang === 'bn') {
+        utterance.lang = 'bn-IN';
+      } else {
+        utterance.lang = 'en-US';
+      }
+
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+
+      utterance.onstart = function () {
+        voiceBtn.classList.add('speaking');
+        voiceIcon.innerText = '⏹️';
+      };
+
+      utterance.onend = function () {
+        voiceBtn.classList.remove('speaking');
+        voiceIcon.innerText = '🔊';
+      };
+
+      utterance.onerror = function () {
+        voiceBtn.classList.remove('speaking');
+        voiceIcon.innerText = '🔊';
+      };
+
+      synth.speak(utterance);
+    }
+
+    // Follow-Up Q&A Chat with Dr. Krishi
+    document.getElementById('chatForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const input = document.getElementById('chatInput');
+      const question = input.value.trim();
+      if (!question || !currentData) return;
+
+      const userQuery = question;
+      input.value = '';
+      input.placeholder = 'Thinking...';
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question: userQuery,
+            disease_name: currentData.vision.predicted_class,
+            severity_grade: currentData.severity.severity_grade,
+            lesion_percentage: currentData.severity.lesion_percentage,
+            confidence: currentData.vision.confidence,
+          })
+        });
+
+        const resData = await response.json();
+        if (resData.reply) {
+          const advText = document.getElementById('advisorMarkdown');
+          advText.innerText += `\n\n💬 Farmer Q: "${userQuery}"\n🌾 Dr. Krishi: ${resData.reply}`;
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        input.placeholder = 'Ask Dr. Krishi another follow-up question...';
+      }
+    });
+  </script>
+</body>
+</html>

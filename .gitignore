@@ -16,12 +16,14 @@ reference_repo/
 
 # Temporary files & cache
 temp/
+scratch/
 __pycache__/
 *.py[cod]
 *$py.class
 .ipynb_checkpoints/
 *.log
 models/severity_benchmark_outputs/
+models/diagnosis_outputs/
 
 # OS & Editor files
 .DS_Store

@@ -173,6 +173,42 @@ python src/05_llama_advisor.py --disease "Rice - Leaf Blast" --severity 2 --json
 
 ---
 
+### 7. End-to-End Diagnostic Pipeline (Vision + Severity + Llama)
+
+Runs the unified diagnostic pipeline linking Deep Vision, OpenCV lesion surface area calculation, SQLite remedies, and Llama agronomic advice in a single call:
+
+```powershell
+# Run full diagnosis on any leaf photo
+python src/diagnose.py --image path/to/leaf.jpg
+
+# Save visual overlays and 4-panel diagnostic canvas
+python src/diagnose.py --image path/to/leaf.jpg --output-dir models/diagnosis_outputs/
+
+# Output structured JSON
+python src/diagnose.py --image path/to/leaf.jpg --json
+```
+
+---
+
+### 8. Interactive In-Field Web Application (`app.py`)
+
+A full glassmorphism dashboard running 100% offline with zero cloud dependency:
+
+```powershell
+python app.py --port 5000
+```
+Open **`http://localhost:5000`** in any browser.
+
+**Features:**
+- 🌾 **One-Click Field Samples**: Instant evaluation of Wheat Leaf Rust, Rice Blast, Rice Brown Spot, and Caterpillars.
+- 🔬 **Multi-View Diagnostic Visualizer**: Seamless toggle between HUD Overlay, 4-Panel Canvas, and Original Foliage.
+- 💊 **Prescription Remedies**: Curative chemicals with exact dilutions and pre-harvest intervals (PHI), organic bio-controls, and resistant cultivars.
+- 🗣️ **Web Speech Audio Narration**: In-browser TTS narration of clinical advice in English, Hindi, and Bengali.
+- 🌐 **Tri-Lingual Interface (i18n)**: One-click switching between English (EN), हिन्दी (HI), and বাংলা (BN).
+- 💬 **Interactive Dr. Krishi Chat**: Follow-up Q&A for weather rules, rain precautions, and tank mixing instructions.
+
+---
+
 ## 🍓 Edge Deployment: Raspberry Pi 4 Optimization
 
 The trained model is architected for seamless deployment on low-power ARM edge hardware (e.g. **Raspberry Pi 4** with Quad-Core Cortex-A72):
@@ -216,14 +252,13 @@ plant/
 │   ├── 04_knowledge_base.py        # Offline SQLite treatment database builder & query engine
 │   ├── knowledge_base.py           # Standard Python import wrapper for module 04
 │   ├── 05_llama_advisor.py         # Llama-3.2-1B agronomic reasoning & clinical advisory engine
-│   └── llama_advisor.py            # Standard Python import wrapper for module 05
+│   ├── llama_advisor.py            # Standard Python import wrapper for module 05
+│   └── diagnose.py                 # Complete end-to-end multi-modal diagnostic pipeline
 │
-├── reference_repo/                 # Reference web client & MobileNet baseline
-│   ├── Crop_disease.py             # Inference server
-│   ├── index.html                  # Diagnostic dashboard interface
-│   ├── script.js                   # Client frontend logic
-│   └── style.css                   # Interface styling
+├── templates/
+│   └── index.html                  # Glassmorphism frontend with Web Speech TTS, EN/HI/BN i18n
 │
+├── app.py                          # Full offline Flask web application & clinical advisor UI
 ├── .gitignore                      # Excludes raw data, virtual environments, and weights
 ├── requirements.txt                # Python project dependencies
 └── README.md                       # Project documentation
