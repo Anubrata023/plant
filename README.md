@@ -128,48 +128,21 @@ python src/03_severity_calculator.py --batch 5
 
 | Grade | Severity Level | Lesion % Range | Clinical Agronomic Action |
 | :---: | :--- | :---: | :--- |
-| **0** | **Healthy** | 0.00% | Prophylactic monitoring; no intervention required |
-| **1** | **Mild** | 0.01% – 10.00% | Early curative window; spot treatment / bio-fungicides |
-| **2** | **Moderate** | 10.01% – 25.00% | Targeted fungicide / curative spray within 3–5 days |
-| **3** | **Severe** | 25.01% – 50.00% | Urgent systemic fungicide application within 24–48 hours |
-| **4** | **Critical** | > 50.00% | Emergency intervention; canopy necrosis catastrophic |
 
----
 
-### 5. Offline SQLite Agricultural Knowledge Base
-
-Verified treatment database (`data/treatments.db`) providing localized, ICAR/IRRI/CIMMYT/USDA-standardized phytopathological remedies across all 29 classes:
 
 ```powershell
-# Build or rebuild offline SQLite database
-python src/04_knowledge_base.py --build
-
-# Query specific disease with severity protocol
-python src/04_knowledge_base.py --query "Rice - Leaf Blast" --severity 3
-
-# Generate grounded context string for Llama-3.2-1B reasoning
-python src/04_knowledge_base.py --query "Wheat - Stripe Rust (Yellow Rust)" --severity 2 --context
-
-# List all 29 indexed crop conditions and pests
-python src/04_knowledge_base.py --list
+python app.py --port 5000
 ```
+Open **`http://localhost:5000`** in any browser.
 
----
-
-### 6. Llama-3.2-1B Agronomic Advisor & Clinical Reasoner
-
-Combines vision model diagnosis, OpenCV lesion severity percentages, and verified SQLite knowledge base context to produce personalized, hallucination-free clinical treatment reports:
-
-```powershell
-# Generate full clinical advisory for a specific diagnosis
-python src/05_llama_advisor.py --disease "Wheat - Stripe Rust (Yellow Rust)" --severity 3 --lesion 32.5
-
-# Run multi-class clinical reasoning benchmark across 5 diverse conditions
-python src/05_llama_advisor.py --batch
-
-# Generate structured JSON output for API or UI integration
-python src/05_llama_advisor.py --disease "Rice - Leaf Blast" --severity 2 --json
-```
+**Features:**
+- 🌾 **One-Click Field Samples**: Instant evaluation of Wheat Leaf Rust, Rice Blast, Rice Brown Spot, and Caterpillars.
+- 🔬 **Multi-View Diagnostic Visualizer**: Seamless toggle between HUD Overlay, 4-Panel Canvas, and Original Foliage.
+- 💊 **Prescription Remedies**: Curative chemicals with exact dilutions and pre-harvest intervals (PHI), organic bio-controls, and resistant cultivars.
+- 🗣️ **Web Speech Audio Narration**: In-browser TTS narration of clinical advice in English, Hindi, and Bengali.
+- 🌐 **Tri-Lingual Interface (i18n)**: One-click switching between English (EN), हिन्दी (HI), and বাংলা (BN).
+- 💬 **Interactive Dr. Krishi Chat**: Follow-up Q&A for weather rules, rain precautions, and tank mixing instructions.
 
 ---
 

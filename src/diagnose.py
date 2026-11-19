@@ -130,7 +130,42 @@ class CropDiagnosticPipeline:
             confidence = float(probs[top_id].item())
             predicted_class = self.class_names[top_id]
 
-            # Top-3 predictions for clinical certainty
+            # Stage 1: Crop / Specimen Group Identification (Wheat vs Rice vs Pest)
+            crop_scores = {"Wheat": 0.0, "Rice": 0.0, "Pest": 0.0}
+            for idx, p in enumerate(probs):
+                cname = self.class_names[idx]
+                if cname.startswith("Wheat"):
+                    crop_scores["Wheat"] += float(p)
+                elif cname.startswith("Rice"):
+                    crop_scores["Rice"] += float(p)
+                elif cname.startswith("Pest"):
+                    crop_scores["Pest"] += float(p)
+
+            detected_crop = max(crop_scores, key=crop_scores.get)
+            crop_confidence = crop_scores[detected_crop]
+
+            # Stage 2: Specific Condition / Disease Identification
+            if " - " in predicted_class:
+                crop_prefix, condition_name = predicted_class.split(" - ", 1)
+            else:
+                crop_prefix, condition_name = detected_crop, predicted_class
+
+            is_healthy = "healthy" in condition_name.lower()
+
+            # Candidate conditions within the identified crop group
+            crop_candidates = []
+            for idx, p in enumerate(probs):
+                cname = self.class_names[idx]
+                if cname.startswith(detected_crop):
+                    c_cond = cname.split(" - ", 1)[1] if " - " in cname else cname
+                    crop_candidates.append({
+                        "condition": c_cond,
+                        "full_class": cname,
+                        "confidence": round(float(p.item()), 4),
+                    })
+            crop_candidates.sort(key=lambda x: x["confidence"], reverse=True)
+
+            # Top-3 predictions overall for clinical certainty
             top3_probs, top3_ids = torch.topk(probs, k=min(3, self.num_classes))
             top3 = [
                 {"class_name": self.class_names[int(idx.item())], "confidence": round(float(p.item()), 4)}
@@ -179,6 +214,12 @@ class CropDiagnosticPipeline:
             "vision": {
                 "predicted_class": predicted_class,
                 "confidence": round(confidence, 4),
+                "detected_crop": detected_crop,
+                "crop_confidence": round(crop_confidence, 4),
+                "crop_scores": {k: round(v, 4) for k, v in crop_scores.items()},
+                "condition_name": condition_name,
+                "is_healthy": is_healthy,
+                "top_crop_candidates": crop_candidates[:4],
                 "top3": top3,
             },
             "severity": {
@@ -246,14 +287,19 @@ def main():
         sev = result["severity"]
         adv = result["advisory"]
 
+        crop_icon = "🌾" if vis["detected_crop"] == "Wheat" else ("🍚" if vis["detected_crop"] == "Rice" else "🐛")
+        health_status = "✅ Healthy Foliage" if vis["is_healthy"] else "⚠️ Pathological Foliage Detected"
+
         print("\n" + "=" * 76)
-        print("🌾 COMPLETE MULTI-MODAL CROP DIAGNOSIS & CLINICAL REPORT")
+        print("🌾 TWO-STAGE CROP HEALTH DIAGNOSIS & CLINICAL REPORT")
         print("=" * 76)
-        print(f"📁 Image:               {Path(result['image_path']).name}")
-        print(f"🎯 Vision Diagnosis:    {vis['predicted_class']} (Confidence: {vis['confidence']*100:.1f}%)")
-        print(f"📐 Lesion Surface Area: {sev['lesion_percentage']:.2f}% | Stage: {sev['severity_level'].upper()} (Grade {sev['severity_grade']})")
-        print(f"⏱️ Urgency Window:      {adv['urgency']}")
-        print(f"⚡ Action Required:     {adv['action_protocol']}")
+        print(f"📁 Image:                  {Path(result['image_path']).name}")
+        print(f"1️⃣ Stage 1 (Crop Type):    {crop_icon} {vis['detected_crop']} (Certainty: {vis['crop_confidence']*100:.1f}%)")
+        print(f"   Distribution:           Wheat: {vis['crop_scores']['Wheat']*100:.1f}% | Rice: {vis['crop_scores']['Rice']*100:.1f}% | Pest: {vis['crop_scores']['Pest']*100:.1f}%")
+        print(f"2️⃣ Stage 2 (Pathology):    {vis['condition_name']} [{health_status}] (Certainty: {vis['confidence']*100:.1f}%)")
+        print(f"📐 Stage 3 (Lesion Area):  {sev['lesion_percentage']:.2f}% | Severity: {sev['severity_level'].upper()} (Grade {sev['severity_grade']})")
+        print(f"⏱️ Urgency Window:         {adv['urgency']}")
+        print(f"⚡ Action Required:        {adv['action_protocol']}")
 
         if adv.get("chemical_remedy"):
             chem = adv["chemical_remedy"]
