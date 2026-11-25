@@ -4,6 +4,15 @@ An enterprise-grade deep learning pipeline specialized exclusively for practical
 
 ---
 
+## 🔗 Quick Links & Submission Deliverables
+- 📄 **[Final Project Technical Report (PDF/DOCX Source)](FINAL_PROJECT_REPORT.md)** — Comprehensive methodology, experimental results, hardware utilization, and edge optimization report.
+- 🎬 **[Demo Video Presentation Script](DEMO_VIDEO_SCRIPT.md)** — Word-for-word 5-minute video walkthrough script with UI screen actions.
+- 🌐 **[Interactive Web Application (`app.py`)](app.py)** — Two-stage autonomous crop & disease classifier with OpenCV foliar lesion quantification, SQLite remedies, and Dr. Krishi Q&A.
+- 🔬 **[End-to-End Diagnostic Pipeline (`src/diagnose.py`)](src/diagnose.py)** — Single-call multi-modal CLI & Python API.
+- 🗄️ **[Offline Agronomic Knowledge Base (`data/treatments.db`)](data/treatments.db)** — Verified ICAR/IRRI/USDA chemical dosages, safety intervals (PHI), and organic alternatives.
+
+---
+
 ## 📌 Project Overview
 
 This repository builds an authentic, field-ready vision pipeline for cereal crops (**Rice** and **Wheat**) alongside major **Agricultural Pests**, purposefully cleaned to eliminate studio, laboratory, and white-card artifacts:
